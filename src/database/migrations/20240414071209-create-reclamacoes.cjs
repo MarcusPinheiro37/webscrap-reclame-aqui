@@ -13,6 +13,16 @@ module.exports = {
                 type: Sequelize.STRING
             },
             url: {
+                type: Sequelize.STRING,
+                unique: true
+            },
+            situacao: {
+                type: Sequelize.STRING
+            },
+            cidade: {
+                type: Sequelize.STRING
+            },
+            estado: {
                 type: Sequelize.STRING
             },
             createdAt: {

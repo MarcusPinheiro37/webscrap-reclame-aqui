@@ -15,7 +15,10 @@ module.exports = (sequelize, DataTypes) => {
     }
     Reclamacoes.init({
         title: DataTypes.STRING,
-        url: DataTypes.STRING
+        url: DataTypes.STRING,
+        situacao: DataTypes.STRING,
+        cidade:DataTypes.STRING,
+        estado:DataTypes.STRING
     }, {
         sequelize,
         modelName: 'Reclamacoes',
