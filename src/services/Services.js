@@ -10,6 +10,16 @@ class Services{
     async postRegistros(dadosRegistro){
         return db[this.model].create(dadosRegistro);
     }
+    async upsertRegistro(dadosRegistro) {
+        const [instance, created] = await db[this.model].upsert(dadosRegistro, {
+            // fields: camposChave,
+            returning: true,
+        });
+        return {
+            instance,
+            created, // verdadeiro se uma nova instancia for criada, falso se uma nova foi atualizada
+        };
+    }
 }
 
 export default Services;
