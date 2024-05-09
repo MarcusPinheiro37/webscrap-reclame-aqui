@@ -37,14 +37,14 @@ async function extrai() {
             })
         );
     
-        reclamacoes = [...reclamacoes, ...newReclamacoes]; // inserção dos dados na array a cada página
-        hasNextPage = await page.evaluate(() => { // verifica se o botão da próxima página está disponível, se estiver define como true
-            const nextButton = document.querySelector('[data-testid="next-page-navigation-button"]');
-            return nextButton && !nextButton.disabled;
-        });
+        // reclamacoes = [...reclamacoes, ...newReclamacoes]; // inserção dos dados na array a cada página
+        // hasNextPage = await page.evaluate(() => { // verifica se o botão da próxima página está disponível, se estiver define como true
+        //     const nextButton = document.querySelector('[data-testid="next-page-navigation-button"]');
+        //     return nextButton && !nextButton.disabled;
+        // });
         // as duas linhas abaixo devem ser usadas quando forem feitos testes, as duas acima devem ser comentadas
-        // reclamacoes = newReclamacoes; // TESTES;
-        // hasNextPage = 0; // testes
+        reclamacoes = newReclamacoes; // TESTES;
+        hasNextPage = 0; // testes
 
         if (hasNextPage) { // verifica se há mais páginas
             const nextPageButton = await page.waitForSelector('[data-testid="next-page-navigation-button"]', { visible: true }); // espera o botão de próxima página ficar visível na página
