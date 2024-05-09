@@ -44,7 +44,7 @@ async function extrai() {
             const percentualRespostas = spans[1]?.innerText.split(' ')[1] || 'Não encontrado';
             const reclamacoesPendentes = spans[2]?.innerText.split(' ')[1] || 'Não encontrado';
             const reclamacoesAvaliadas = spans[3]?.innerText.split(' ')[1] || 'Não encontrado';
-            const mediaAvaliacao = spans[3]?.innerText.split(' ')[10] || 'Não encontrado';
+            const mediaAvaliacao = spans[3]?.innerText.split(' ')[10].slice(0, -1) || 'Não encontrado';
             const porcentagemVoltaNegocio = spans[4]?.innerText.split(' ')[3] || 'Não encontrado';
             const porcentagemResolucao = spans[5]?.innerText.split(' ')[3] || 'Não encontrado';
             const tempoMedioResposta = spans[6]?.innerText.split(' é ')[1] || 'Não encontrado';
