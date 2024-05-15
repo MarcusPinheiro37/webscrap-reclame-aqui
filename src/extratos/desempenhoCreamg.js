@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import aceitaCookies from '../helper/aceitaCookiesHelper.js';
+import convertePlanilha from '../helper/salvaPlanilha.js';
 
 function delay(time) {
     return new Promise(function(resolve) {
@@ -50,25 +51,25 @@ async function extrai() {
             const tempoMedioResposta = spans[6]?.innerText.split(' é ')[1] || 'Não encontrado';
 
             return {
-                periodo,
-                iniPeriodo,
-                fimPeriodo,
-                notaReputacao,
-                qtdReclamacoes,
-                percentualRespostas,
-                reclamacoesPendentes,
-                reclamacoesAvaliadas,
-                mediaAvaliacao,
-                porcentagemVoltaNegocio,
-                porcentagemResolucao,
-                tempoMedioResposta
+                periodo, // 1
+                iniPeriodo, // 2
+                fimPeriodo, // 3
+                notaReputacao, // 4
+                qtdReclamacoes, // 5
+                percentualRespostas, // 6
+                reclamacoesPendentes, // 7
+                reclamacoesAvaliadas, // 8
+                mediaAvaliacao, // 9
+                porcentagemVoltaNegocio, // 10
+                porcentagemResolucao, // 11
+                tempoMedioResposta // 12
             };
         }, i);
 
         reclamacoesNotas.push(dadosAba);
     }
-
-    console.log(reclamacoesNotas);
+    // console.log(reclamacoesNotas);
+    convertePlanilha({dadosPlanilha: reclamacoesNotas, nomePlanilha: 'Reclame Aqui'});
     fs.writeFileSync('reclamacoesNotas.json', JSON.stringify(reclamacoesNotas, null, 2), 'utf-8');
 
     await browser.close();
