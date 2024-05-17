@@ -1,7 +1,9 @@
+import dotenv from 'dotenv';
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import aceitaCookies from '../helper/aceitaCookiesHelper.js';
 import convertePlanilha from '../helper/salvaPlanilha.js';
+dotenv.config();
 
 function delay(time) {
     return new Promise(function(resolve) {
@@ -69,7 +71,7 @@ async function extrai() {
         reclamacoesNotas.push(dadosAba);
     }
     // console.log(reclamacoesNotas);
-    convertePlanilha({dadosPlanilha: reclamacoesNotas, nomePlanilha: 'Reclame Aqui'});
+    convertePlanilha({dadosPlanilha: reclamacoesNotas, nomePlanilha: 'Reclame Aqui Notas', caminhoPlanilha: process.env.PATH_TO_SAVE || ''});
     fs.writeFileSync('reclamacoesNotas.json', JSON.stringify(reclamacoesNotas, null, 2), 'utf-8');
 
     await browser.close();

@@ -8,7 +8,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "extrai": "node src/extratos/extraiReclamacoes.js",
     "extrainota": "node src/extratos/desempenhoCreamg.js"
- 
   },
   "keywords": [],
   "author": "",
@@ -18,7 +17,8 @@
     "excel4node": "^1.8.2",
     "mysql2": "^3.9.4",
     "puppeteer": "^22.6.4",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "eslint": "^8.46.0",
