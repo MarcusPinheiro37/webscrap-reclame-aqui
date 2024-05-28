@@ -1,80 +1,92 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import fs from 'fs';
 import extraiDataLocal from './extraiDataLocalReclamacao.js';
 import aceitaCookies from '../helper/aceitaCookiesHelper.js';
 
-function delay(time) {
-    return new Promise(function(resolve) {
-        setTimeout(resolve, time);
-    });
-}
+puppeteer.use(StealthPlugin());
 
 const urlAlvo = 'https://www.reclameaqui.com.br/empresa/crea-mg-conselho-regional-de-engenharia-e-agronomia-de-minas-gerais/lista-reclamacoes/';
 
+const delay = (min, max) => new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
+
 async function extrai() {
-    const browser = await puppeteer.launch({ // inicia o navegador
+    let browser = await puppeteer.launch({
         headless: false,
         args: ['--start-maximized'],
         defaultViewport: null
     });
-    const page = await browser.newPage(); // cria uma nova página
-    await page.goto(urlAlvo); // vai até a url alvo na nova página
+    let page = await browser.newPage();
 
-    aceitaCookies(page); // fecha o banner e aceita os cookies
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36');
+    await page.setExtraHTTPHeaders({
+        'accept-language': 'en-US,en;q=0.9'
+    });
 
-    let reclamacoes = []; // cria um array vazio para inserções
-    let hasNextPage = true; // define próximas páginas como padrão
+    await page.goto(urlAlvo, { waitUntil: 'networkidle2' });
 
-    while (hasNextPage) { // inicia um while para ler os arquivos enquanto houver próxima página
-        await delay(2500); // delay de 2.5 segundos para dar tempo de carregar a página
-        let newReclamacoes = await page.$$eval('.sc-1pe7b5t-0.eJgBOc a', (anchors) => // encontra a classe na página web, checar pelo dev tools
-            anchors.map((anchor) => {
-                const title = anchor.querySelector('h4[title]').innerText; // título da reclamação
-                const url = `https://www.reclameaqui.com.br${anchor.getAttribute('href')}`; // link da reclamação
-                const situacaoElement = anchor.parentElement.querySelector('.sc-1pe7b5t-4'); // situacao
-                const situacao = situacaoElement ? situacaoElement.innerText : 'Unknown'; // tratamento para caso não aja situação
-                return { title, url, situacao }; // objeto base
+    await aceitaCookies(page);
+
+    let reclamacoes = [];
+    let hasNextPage = true;
+    const restartInterval = 10; // Reiniciar o navegador a cada 10 iterações
+    let iteration = 0;
+
+    while (hasNextPage) {
+        await delay(2500, 3500);
+
+        const overlayRemoved = await page.evaluate(() => {
+            const overlay = document.getElementById('sec-overlay');
+            if (overlay) {
+                overlay.remove();
+                return true;
+            }
+            return false;
+        });
+
+        if (overlayRemoved) {
+            await page.reload({ waitUntil: 'networkidle2' });
+            await delay(5500, 6500);
+        }
+
+        let newReclamacoes = await page.$$eval('.sc-1pe7b5t-0.eJgBOc a', anchors => 
+            anchors.map(anchor => {
+                const title = anchor.querySelector('h4[title]').innerText;
+                const url = `https://www.reclameaqui.com.br${anchor.getAttribute('href')}`;
+                const situacaoElement = anchor.parentElement.querySelector('.sc-1pe7b5t-4');
+                const situacao = situacaoElement ? situacaoElement.innerText : 'Unknown';
+                return { title, url, situacao };
             })
         );
-    
-        // reclamacoes = [...reclamacoes, ...newReclamacoes]; // inserção dos dados na array a cada página
-        // hasNextPage = await page.evaluate(() => { // verifica se o botão da próxima página está disponível, se estiver define como true
-        //     const nextButton = document.querySelector('[data-testid="next-page-navigation-button"]');
-        //     return nextButton && !nextButton.disabled;
-        // });
-        // as duas linhas abaixo devem ser usadas quando forem feitos testes, as duas acima devem ser comentadas
-        reclamacoes = newReclamacoes; // TESTES;
-        hasNextPage = 0; // testes
-
-        if (hasNextPage) { // verifica se há mais páginas
-            const nextPageButton = await page.waitForSelector('[data-testid="next-page-navigation-button"]', { visible: true }); // espera o botão de próxima página ficar visível na página
-            if (nextPageButton) { // verifica se o botão de próxima página foi encontrado
-                try {
-                    await nextPageButton.click(); // tenta clicar no botão de próxima página
-                } catch (clickError) {
-                    await page.evaluate(() => { 
-                        const nextButton = document.querySelector('[data-testid="next-page-navigation-button"]'); // busca pelo botão de próxima página no contexto da página
-                        nextButton.click(); // clica no botão de próxima página
-                    });
-                }
-                await page.waitForNavigation(); // aguarda a navegação para a próxima página ser concluída
-        
-                await delay(2500); // espera 2.5 segundos para dar tempo de carregar a página
+        console.log(newReclamacoes);
+        reclamacoes = [...reclamacoes, ...newReclamacoes];
+        hasNextPage = await page.evaluate(() => {
+            const nextButton = document.querySelector('[data-testid="next-page-navigation-button"]');
+            return nextButton && !nextButton.disabled;
+        });
+        if (hasNextPage) {
+            try {
+                await Promise.all([
+                    page.waitForNavigation({ waitUntil: 'networkidle2' }),
+                    page.click('[data-testid="next-page-navigation-button"]')
+                ]);
+                await delay(2500, 3500);
+            } catch (clickError) {
+                console.error('Erro ao clicar no botão de próxima página:', clickError);
+                hasNextPage = false;
             }
-        } 
-        
+        }
     }
-    
+
     for (const reclamacao of reclamacoes) {
-        const page = await browser.newPage(); // Cria uma nova página para cada reclamação
-        await extraiDataLocal(reclamacao, page); // Passa a página para extraiDataLocal
-        await page.close(); // Fecha a página quando finalizado
+        iteration++;
+        page = await extraiDataLocal(reclamacao, page, iteration, restartInterval);
     }
 
-    await browser.close(); // fecha o navegador
-    
-    fs.writeFileSync('reclamacoes.json', JSON.stringify(reclamacoes, null, 2), 'utf-8'); // salva num arquivo reclamacoes.json
+    console.log(reclamacoes);
+    await browser.close();
 
+    fs.writeFileSync('reclamacoes.json', JSON.stringify(reclamacoes, null, 2), 'utf-8');
 }
 
-extrai(); // chama a função
+extrai();
