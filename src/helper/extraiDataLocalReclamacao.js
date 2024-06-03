@@ -1,8 +1,8 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import converteData from '../helper/conversorDataHelper.js';
+import converteData from './conversorDataHelper.js';
 // import ReclamacaoController from '../controllers/ReclamacaoController.js';
-import aceitaCookies from '../helper/aceitaCookiesHelper.js';
+import aceitaCookies from './aceitaCookiesHelper.js';
 puppeteer.use(StealthPlugin());
 
 // const reclamacaoController = new ReclamacaoController();

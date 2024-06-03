@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import fs from 'fs';
-import extraiDataLocal from './extraiDataLocalReclamacao.js';
+import extraiDataLocal from '../helper/extraiDataLocalReclamacao.js';
 import aceitaCookies from '../helper/aceitaCookiesHelper.js';
 
 puppeteer.use(StealthPlugin());

@@ -11,7 +11,7 @@ function delay(time) {
     });
 }
 
-const urlAlvo = 'https://www.reclameaqui.com.br/empresa/crea-mg-conselho-regional-de-engenharia-e-agronomia-de-minas-gerais/lista-reclamacoes/';
+const urlAlvo = process.env.EMPRESA_URL;    
 
 async function extrai() {
     const browser = await puppeteer.launch({
